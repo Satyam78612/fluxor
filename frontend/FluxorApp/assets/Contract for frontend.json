@@ -1,0 +1,1128 @@
+[
+    {
+        "id": "bitcoin",
+        "name": "Bitcoin",
+        "symbol": "BTC",
+        "logo": "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 396165138,
+                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+                "decimals": 8
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 96619373,
+                "address": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+                "decimals": 8
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 96619373,
+                "address": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+                "decimals": 8
+            },
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 16641074,
+                "address": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+                "decimals": 8
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 5067496,
+                "address": "0x68f180fcce6836688e9084f035309e29bf0a2095",
+                "decimals": 8
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 2486209,
+                "address": "0x152b9d0fdc40c096757f570a51e494bd4b943e50",
+                "decimals": 8
+            },
+            {
+                "chainId": 80094,
+                "chainName": "Berachain",
+                "liquidityUsd": 2147448,
+                "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+                "decimals": 8
+            },
+            {
+                "chainId": 146,
+                "chainName": "Sonic",
+                "liquidityUsd": 2147448,
+                "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+                "decimals": 8
+            },
+            {
+                "chainId": 143,
+                "chainName": "Monad",
+                "liquidityUsd": 2147448,
+                "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+                "decimals": 8
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 2147448,
+                "address": "0x0555e30da8f98308edb960aa94c0db47230d2b9c",
+                "decimals": 8
+            }
+        ]
+    },
+    {
+        "id": "ethereum",
+        "name": "Ethereum",
+        "symbol": "ETH",
+        "logo": "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501628",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "binancecoin",
+        "name": "BNB",
+        "symbol": "BNB",
+        "logo": "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501970",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "solana",
+        "name": "Solana",
+        "symbol": "SOL",
+        "logo": "https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1718769756",
+        "decimal": 9,
+        "native_identifier": "So11111111111111111111111111111111111111112"
+    },
+    {
+        "id": "avalanche-2",
+        "name": "Avalanche",
+        "symbol": "AVAX",
+        "logo": "https://coin-images.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png?1696512369",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "matic-network",
+        "name": "MATIC",
+        "symbol": "MATIC",
+        "logo": "https://coin-images.coingecko.com/coins/images/4713/large/polygon.png?1698233745",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000001010"
+    },
+    {
+        "id": "plasma",
+        "name": "Plasma",
+        "symbol": "XPL",
+        "logo": "https://coin-images.coingecko.com/coins/images/66489/large/Plasma-symbol-green-1.png?1755142558",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "the-open-network",
+        "name": "Toncoin",
+        "symbol": "TON",
+        "logo": "https://coin-images.coingecko.com/coins/images/17980/large/photo_2024-09-10_17.09.00.jpeg?1725963446",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 1277839,
+                "address": "0x582d872a1b094fc48f5de31d3b73f2d9be47def1",
+                "decimals": 9
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 149722,
+                "address": "0x76a797a59ba2c17726896976b7b3747bfd1d220f",
+                "decimals": 9
+            }
+        ]
+    },
+    {
+        "id": "monad",
+        "name": "Monad",
+        "symbol": "MON",
+        "logo": "https://coin-images.coingecko.com/coins/images/38927/large/mon.png?1766029057",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "ripple",
+        "name": "XRP",
+        "symbol": "XRP",
+        "logo": "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501442",
+        "deployments": [
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 6557018,
+                "address": "0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe",
+                "decimals": 18
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 207438,
+                "address": "0x39fbbabf11738317a448031930706cd3e612e1b9",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "hyperliquid",
+        "name": "Hyperliquid",
+        "symbol": "HYPE",
+        "logo": "https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg?1729431300",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "polkadot",
+        "name": "Polkadot",
+        "symbol": "DOT",
+        "logo": "https://coin-images.coingecko.com/coins/images/12171/large/polkadot.jpg?1766533446",
+        "deployments": [
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 2625666,
+                "address": "0x8d010bf9c26881788b4e6bf5fd1bdc358c8f90b8",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 2625666,
+                "address": "0x8d010bf9c26881788b4e6bf5fd1bdc358c8f90b8",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 2625666,
+                "address": "0x8d010bf9c26881788b4e6bf5fd1bdc358c8f90b8",
+                "decimals": 18
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 2625666,
+                "address": "0x8d010bf9c26881788b4e6bf5fd1bdc358c8f90b8",
+                "decimals": 18
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 7218,
+                "address": "0x196c20da81fbc324ecdf55501e95ce9f0bd84d14",
+                "decimals": 10
+            }
+        ]
+    },
+    {
+        "id": "eigenlayer",
+        "name": "EigenCloud",
+        "symbol": "EIGEN",
+        "logo": "https://coin-images.coingecko.com/coins/images/37441/large/eigencloud.jpg?1751003565",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 7998694,
+                "address": "0xec53bf9167f50cdeb3ae105f56099aaab9061f83",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 37466,
+                "address": "0x2081ab0d9ec9e4303234ab26d86b20b3367946ee",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "layerzero",
+        "name": "LayerZero",
+        "symbol": "ZRO",
+        "logo": "https://coin-images.coingecko.com/coins/images/28206/large/ftxG9_TJ_400x400.jpeg?1696527208",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 398650,
+                "address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+                "decimals": 18
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 309475,
+                "address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 297706,
+                "address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+                "decimals": 18
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 56842,
+                "address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 36441,
+                "address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+                "decimals": 18
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 2395,
+                "address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "near",
+        "name": "NEAR Protocol",
+        "symbol": "NEAR",
+        "logo": "https://coin-images.coingecko.com/coins/images/10365/large/near.jpg?1696510367",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 459678,
+                "address": "0x85f17cf997934a597031b2e18a9ab6ebd4b9f6a4",
+                "decimals": 24
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 289878,
+                "address": "0x1fa4a73a3f0133f0025378af00236f3abdee5d63",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "zcash",
+        "name": "Zcash",
+        "symbol": "ZEC",
+        "logo": "https://coin-images.coingecko.com/coins/images/486/large/circle-zcash-color.png?1696501740",
+        "deployments": [
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 4127136,
+                "address": "A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS",
+                "decimals": 8
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 1046831,
+                "address": "0x1ba42e5193dfa8b03d15dd1b86a3113bbbef8eeb",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "dogecoin",
+        "name": "Dogecoin",
+        "symbol": "DOGE",
+        "logo": "https://coin-images.coingecko.com/coins/images/5/large/dogecoin.png?1696501409",
+        "deployments": [
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 3121524,
+                "address": "0xba2ae424d960c26247dd6c32edc70b295c744c43",
+                "decimals": 8
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 47201,
+                "address": "0x846e52d0dd71c2fdc891538b2d37ff84345c7b9f",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "tether-gold",
+        "name": "Tether Gold",
+        "symbol": "XAUT",
+        "logo": "https://coin-images.coingecko.com/coins/images/10481/large/Tether_Gold.png?1696510471",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 7823799,
+                "address": "0x68749665ff8d2d112fa859aa293f07a622782f38",
+                "decimals": 6
+            }
+        ]
+    },
+    {
+        "id": "tether",
+        "name": "Tether",
+        "symbol": "USDT",
+        "logo": "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
+        "deployments": [
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 675515392,
+                "address": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                "decimals": 6
+            },
+            {
+                "chainId": 137,
+                "chainName": "Polygon",
+                "liquidityUsd": 71433189,
+                "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+                "decimals": 6
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 69109351,
+                "address": "0x55d398326f99059ff775485246999027b3197955",
+                "decimals": 18
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 29007544,
+                "address": "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
+                "decimals": 6
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 4645647,
+                "address": "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2",
+                "decimals": 6
+            },
+            {
+                "chainId": 5000,
+                "chainName": "Mantle",
+                "liquidityUsd": 1883607,
+                "address": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+                "decimals": 6
+            },
+            {
+                "chainId": 80094,
+                "chainName": "Berachain",
+                "liquidityUsd": 1883607,
+                "address": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+                "decimals": 6
+            },
+            {
+                "chainId": 196,
+                "chainName": "X Layer",
+                "liquidityUsd": 1883607,
+                "address": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+                "decimals": 6
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 474170,
+                "address": "0x01bff41798a0bcf287b996046ca68b395dbc1071",
+                "decimals": 6
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 226726,
+                "address": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+                "decimals": 6
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 167935,
+                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                "decimals": 6
+            },
+            {
+                "chainId": 143,
+                "chainName": "Monad",
+                "liquidityUsd": 2711,
+                "address": "0xe7cd86e13ac4309349f30b3435a9d337750fc82d",
+                "decimals": 6
+            },
+            {
+                "chainId": 9745,
+                "chainName": "Plasma",
+                "liquidityUsd": 0,
+                "address": "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb",
+                "decimals": 6
+            },
+            {
+                "chainId": 999,
+                "chainName": "HyperEVM",
+                "liquidityUsd": 0,
+                "address": "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb",
+                "decimals": 6
+            }
+        ]
+    },
+    {
+        "id": "chainlink",
+        "name": "Chainlink",
+        "symbol": "LINK",
+        "logo": "https://coin-images.coingecko.com/coins/images/877/large/Chainlink_Logo_500.png?1760023405",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 66280357,
+                "address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+                "decimals": 18
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 4987503,
+                "address": "0xf97f4df75117a78c1a5a0dbb814af92458539fb4",
+                "decimals": 18
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 2469490,
+                "address": "0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd",
+                "decimals": 18
+            },
+            {
+                "chainId": 137,
+                "chainName": "Polygon",
+                "liquidityUsd": 1078338,
+                "address": "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39",
+                "decimals": 18
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 471628,
+                "address": "0x5947bb275c521040051d82396192181b413227a3",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 461588,
+                "address": "0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 237854,
+                "address": "0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6",
+                "decimals": 18
+            },
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 541,
+                "address": "LinkhB3afbBKb2EQQu7s7umdZceV3wcvAUJhQAfQ23L",
+                "decimals": 9
+            }
+        ]
+    },
+    {
+        "id": "ondo-finance",
+        "name": "Ondo",
+        "symbol": "ONDO",
+        "logo": "https://coin-images.coingecko.com/coins/images/26580/large/ONDO.png?1696525656",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 8915031,
+                "address": "0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "usd-coin",
+        "name": "USDC",
+        "symbol": "USDC",
+        "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+        "deployments": [
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 96294917,
+                "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+                "decimals": 6
+            },
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 25969301,
+                "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "decimals": 6
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 23001476,
+                "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                "decimals": 6
+            },
+            {
+                "chainId": 137,
+                "chainName": "Polygon",
+                "liquidityUsd": 15780061,
+                "address": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+                "decimals": 6
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 15294866,
+                "address": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
+                "decimals": 6
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 15212670,
+                "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 7620040,
+                "address": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+                "decimals": 6
+            },
+            {
+                "chainId": 143,
+                "chainName": "Monad",
+                "liquidityUsd": 4970170,
+                "address": "0x754704bc059f8c67012fed69bc8a327a5aafb603",
+                "decimals": 6
+            },
+            {
+                "chainId": 146,
+                "chainName": "Sonic",
+                "liquidityUsd": 2317948,
+                "address": "0x29219dd400f2bf60e5a23d13be72b486d4038894",
+                "decimals": 6
+            },
+            {
+                "chainId": 999,
+                "chainName": "HyperEVM",
+                "liquidityUsd": 832994,
+                "address": "0xb88339cb7199b77e23db6e890353e22632ba630f",
+                "decimals": 6
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 3941,
+                "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                "decimals": 6
+            },
+            {
+                "chainId": 196,
+                "chainName": "X Layer",
+                "liquidityUsd": 0,
+                "address": "0x74b7f16337b8972027f6196a17a631ac6de26d22",
+                "decimals": 6
+            }
+        ]
+    },
+    {
+        "id": "uniswap",
+        "name": "Uniswap",
+        "symbol": "UNI",
+        "logo": "https://coin-images.coingecko.com/coins/images/12504/large/uniswap-logo.png?1720676669",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 43990316,
+                "address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+                "decimals": 18
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 1185804,
+                "address": "0xbf5140a22578168fd562dccf235e5d43a02ce9b1",
+                "decimals": 18
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 724346,
+                "address": "0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 74089,
+                "address": "0x6fd9d7ad17242c41f7131d257212c54a0e816691",
+                "decimals": 18
+            },
+            {
+                "chainId": 137,
+                "chainName": "Polygon",
+                "liquidityUsd": 60674,
+                "address": "0xb33eaad8d922b1083446dc23f610c2567fb5180f",
+                "decimals": 18
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 327,
+                "address": "0x8ebaf22b6f053dffeaf46f4dd9efa95d89ba8580",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+      "id": "ethena",
+      "name": "Ethena",
+      "symbol": "ENA",
+      "logo": "https://coin-images.coingecko.com/coins/images/36530/large/ethena.png?1711701436",
+      "deployments": [
+        {
+          "chainId": 1,
+          "chainName": "Ethereum",
+          "liquidityUsd": 1624882,
+          "address": "0x57e114b691db790c35207b2e685d4a43181e6061",
+          "decimals": 18
+        },
+        {
+          "chainId": 8453,
+          "chainName": "Base",
+          "liquidityUsd": 44106,
+          "address": "0x58538e6a46e07434d7e7375bc268d3cb839c0133",
+          "decimals": 18
+        },
+        {
+          "chainId": 5000,
+          "chainName": "Mantle",
+          "liquidityUsd": 559,
+          "address": "0x58538e6a46e07434d7e7375bc268d3cb839c0133",
+          "decimals": 18
+        }
+      ]
+    },
+    {
+        "id": "arbitrum",
+        "name": "Arbitrum",
+        "symbol": "ARB",
+        "logo": "https://coin-images.coingecko.com/coins/images/16547/large/arb.jpg?1721358242",
+        "deployments": [
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 6492058,
+                "address": "0x912ce59144191c1204e64559fe8253a0e49e6548",
+                "decimals": 18
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 128114,
+                "address": "0xb50721bcf8d664c30412cfbc6cf7a15145234ad1",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "aave",
+        "name": "Aave",
+        "symbol": "AAVE",
+        "logo": "https://coin-images.coingecko.com/coins/images/12645/large/aave-token-round.png?1720472354",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 82733301,
+                "address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 1602951,
+                "address": "0x63706e401c06ac8513145b7687a14804d17f814b",
+                "decimals": 18
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 902397,
+                "address": "0xba5ddd1f9d7f570dc94a51479a000e3bce967196",
+                "decimals": 18
+            },
+            {
+                "chainId": 43114,
+                "chainName": "Avalanche",
+                "liquidityUsd": 453304,
+                "address": "0x63a72806098bd3d9520cc43356dd78afe5d386d9",
+                "decimals": 18
+            },
+            {
+                "chainId": 137,
+                "chainName": "Polygon",
+                "liquidityUsd": 436745,
+                "address": "0xd6df932a45c0f255f85145f286ea0b292b21c90b",
+                "decimals": 18
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 270921,
+                "address": "0xfb6115445bff7b52feb98650c87f44907e58f802",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 131428,
+                "address": "0x76fb31fb4af56892a25e32cfc43de717950c9278",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "sky",
+        "name": "Sky",
+        "symbol": "SKY",
+        "logo": "https://coin-images.coingecko.com/coins/images/39925/large/sky.jpg?1724827980",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 2817975,
+                "address": "0x56072c95faa701256059aa122697b133aded9279",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "worldcoin-wld",
+        "name": "Worldcoin",
+        "symbol": "WLD",
+        "logo": "https://coin-images.coingecko.com/coins/images/31069/large/worldcoin.jpeg?1696529903",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 5165765,
+                "address": "0x163f8c2467924be0ae7b5347228cabf260318753",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 196153,
+                "address": "0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "pancakeswap-token",
+        "name": "PancakeSwap",
+        "symbol": "CAKE",
+        "logo": "https://coin-images.coingecko.com/coins/images/12632/large/pancakeswap-cake-logo_%281%29.png?1696512440",
+        "deployments": [
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 44160721,
+                "address": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 250381,
+                "address": "0x3055913c90fcc1a6ce9a358911721eeb942013a1",
+                "decimals": 18
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 228124,
+                "address": "0x152649ea73beab28c5b49b26eb48f7ead6d4c898",
+                "decimals": 18
+            },
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 41186,
+                "address": "0x1b896893dfc86bb67cf57767298b9073d2c1ba2c",
+                "decimals": 18
+            },
+            {
+                "chainId": 59144,
+                "chainName": "Linea",
+                "liquidityUsd": 12710,
+                "address": "0x0d1e753a25ebda689453309112904807625befbe",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "jupiter-exchange-solana",
+        "name": "Jupiter",
+        "symbol": "JUP",
+        "logo": "https://coin-images.coingecko.com/coins/images/34188/large/jup.png?1704266489",
+        "deployments": [
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 854127,
+                "address": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+                "decimals": 6
+            }
+        ]
+    },
+    {
+        "id": "pudgy-penguins",
+        "name": "Pudgy Penguins",
+        "symbol": "PENGU",
+        "logo": "https://coin-images.coingecko.com/coins/images/52622/large/PUDGY_PENGUINS_PENGU_PFP.png?1733809110",
+        "deployments": [
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 9568971,
+                "address": "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+                "decimals": 6
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 89576,
+                "address": "0x6418c0dd099a9fda397c766304cdd918233e8847",
+                "decimals": 18
+            },
+            {
+                "chainId": 999,
+                "chainName": "HyperEVM",
+                "liquidityUsd": 10416,
+                "address": "0xfa44c2634ff17cbe26dc3007d36bd61c79068c14",
+                "decimals": 18
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 1136,
+                "address": "0x6418c0dd099a9fda397c766304cdd918233e8847",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "starknet",
+        "name": "Starknet",
+        "symbol": "STRK",
+        "logo": "https://coin-images.coingecko.com/coins/images/26433/large/starknet.png?1696525507",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 314200,
+                "address": "0xca14007eff0db1f8135f4c25b34de49ab0d42766",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "sonic-3",
+        "name": "Sonic",
+        "symbol": "S",
+        "logo": "https://coin-images.coingecko.com/coins/images/38108/large/200x200_Sonic_Logo.png?1734679256",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "berachain-bera",
+        "name": "Berachain",
+        "symbol": "BERA",
+        "logo": "https://coin-images.coingecko.com/coins/images/25235/large/BERA.png?1738822008",
+        "decimal": 18,
+        "native_identifier": "0x0000000000000000000000000000000000000000"
+    },
+    {
+        "id": "optimism",
+        "name": "Optimism",
+        "symbol": "OP",
+        "logo": "https://coin-images.coingecko.com/coins/images/25244/large/Optimism.png?1696524385",
+        "deployments": [
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 1746038,
+                "address": "0x4200000000000000000000000000000000000042",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "aerodrome-finance",
+        "name": "Aerodrome",
+        "symbol": "AERO",
+        "logo": "https://coin-images.coingecko.com/coins/images/31745/large/token.png?1696530564",
+        "deployments": [
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 42321574,
+                "address": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "syrup",
+        "name": "Maple Finance",
+        "symbol": "SYRUP",
+        "logo": "https://coin-images.coingecko.com/coins/images/51232/large/_syrup_token_logo.png?1747292046",
+        "deployments": [
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 3827161,
+                "address": "0x643c4e15d7d62ad0abec4a9bd4b001aa3ef52d66",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 125901,
+                "address": "0x688aee022aa544f150678b8e5720b6b96a9e9a2f",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "pendle",
+        "name": "Pendle",
+        "symbol": "PENDLE",
+        "logo": "https://coin-images.coingecko.com/coins/images/15069/large/Pendle_Logo_Normal-03.png?1696514728",
+        "deployments": [
+            {
+                "chainId": 42161,
+                "chainName": "Arbitrum",
+                "liquidityUsd": 4863576,
+                "address": "0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8",
+                "decimals": 18
+            },
+            {
+                "chainId": 56,
+                "chainName": "BNB Chain",
+                "liquidityUsd": 652596,
+                "address": "0xb3ed0a426155b79b898849803e3b36552f7ed507",
+                "decimals": 18
+            },
+            {
+                "chainId": 1,
+                "chainName": "Ethereum",
+                "liquidityUsd": 517344,
+                "address": "0x808507121b80c02388fad14726482e061b8da827",
+                "decimals": 18
+            },
+            {
+                "chainId": 8453,
+                "chainName": "Base",
+                "liquidityUsd": 152219,
+                "address": "0xa99f6e6785da0f5d6fb42495fe424bce029eeb3e",
+                "decimals": 18
+            },
+            {
+                "chainId": 146,
+                "chainName": "Sonic",
+                "liquidityUsd": 12430,
+                "address": "0xf1ef7d2d4c0c881cd634481e0586ed5d2871a74b",
+                "decimals": 18
+            },
+            {
+                "chainId": 999,
+                "chainName": "HyperEVM",
+                "liquidityUsd": 5758,
+                "address": "0xd6eb81136884713e843936843e286fd2a85a205a",
+                "decimals": 18
+            },
+            {
+                "chainId": 10,
+                "chainName": "Optimism",
+                "liquidityUsd": 170,
+                "address": "0xbc7b1ff1c6989f006a1185318ed4e7b5796e66e1",
+                "decimals": 18
+            }
+        ]
+    },
+    {
+        "id": "raydium",
+        "name": "Raydium",
+        "symbol": "RAY",
+        "logo": "https://coin-images.coingecko.com/coins/images/13928/large/PSigc4ie_400x400.jpg?1696513668",
+        "deployments": [
+            {
+                "chainId": 101,
+                "chainName": "Solana",
+                "liquidityUsd": 10983699,
+                "address": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+                "decimals": 6
+            }
+        ]
+    },
+    {
+      "id": "succinct",
+      "name": "Succinct",
+      "symbol": "PROVE",
+      "logo": "https://coin-images.coingecko.com/coins/images/67905/large/succinct-logo.png?1754228574",
+      "deployments": [
+        {
+          "chainId": 56,
+          "chainName": "BNB Chain",
+          "liquidityUsd": 380928,
+          "address": "0x7ddf164cecfddd0f992299d033b5a11279a15929",
+          "decimals": 18
+        },
+        {
+          "chainId": 1,
+          "chainName": "Ethereum",
+          "liquidityUsd": 16594,
+          "address": "0x6bef15d938d4e72056ac92ea4bdd0d76b1c4ad29",
+          "decimals": 18
+        }
+      ]
+    }
+]
+

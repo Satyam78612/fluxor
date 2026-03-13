@@ -1,0 +1,31 @@
+# Node/Javascript
+**/node_modules/
+npm-debug.log
+yarn-error.log
+
+# Frontend (React/Next.js/Vite)
+**/.next/
+**/build/
+**/dist/
+**/out/
+
+# Smart Contracts (Hardhat/Foundry)
+**/artifacts/
+**/cache/
+**/typechain/
+**/typechain-types/
+**/broadcast/
+
+# Backend (Depending on your stack)
+**/__pycache__/
+**/.venv/
+**/venv/
+*.sqlite3
+
+# Your existing rules
+target/
+*.log
+*.pid
+.DS_Store
+.expo
+.env
