@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 
@@ -28,6 +30,10 @@ const MARKET_TABS = [
   'RWA', 'AI', 'DeFi', 'L1', 'L2', 'CEX Token', 'Meme', 'DePIN', 'Oracle'
 ];
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$', EUR: '€', AUD: 'A$', INR: '₹', CAD: 'C$', JPY: '¥', CNY: '¥', GBP: '£', SGD: 'S$'
+};
+
 type SortField = 'none' | 'price' | 'change';
 type SortDirection = 'asc' | 'desc';
 
@@ -38,11 +44,12 @@ export default function MarketScreen() {
   // --- ViewModel Integration ---
   const {
     allTokens,
-    searchedToken,
-    setSearchedToken,
+    searchedTokens,
+    setSearchedTokens,
     isLoading,
     getTokensForTab,
-    searchTokenByAddress
+    searchTokenByAddress,
+    fiatRates
   } = useMarketViewModel();
 
   const [searchText, setSearchText] = useState('');
@@ -50,19 +57,41 @@ export default function MarketScreen() {
   const [sortField, setSortField] = useState<SortField>('none');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('None'); 
+
+  useFocusEffect(
+    useCallback(() => {
+      setSortField('none');
+      setSortDirection('desc');
+
+      const loadCurrency = async () => {
+        const storedCurrency = await AsyncStorage.getItem('selectedCurrency');
+        if (storedCurrency) setSelectedCurrency(storedCurrency);
+      };
+      loadCurrency();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      setSearchText('');
+      setSearchedTokens([]);
+      return () => {
+      };
+    }, [])
+  );
+
 // --- Auto-Search Effect ---
   useEffect(() => {
     const needle = searchText.trim();
     if (needle.length === 0) {
-      setSearchedToken(null);
+      setSearchedTokens([]);
       return;
     }
 
     const delayDebounceFn = setTimeout(() => {
-      // 🚀 REMOVED the > 20 length restriction!
-      // Now it will ask your backend for ANY symbol, name, or contract you type.
       searchTokenByAddress(needle);
-    }, 600); // 600ms debounce
+    }, 600); 
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchText]);
@@ -83,16 +112,28 @@ export default function MarketScreen() {
         t.deployments?.some(d => d.address?.toLowerCase().includes(needle))
       );
 
-      // Prevents duplicates if the searched API token is already in your JSON
-      if (searchedToken && !list.find(t => t.id === searchedToken.id || t.symbol?.toLowerCase() === searchedToken.symbol?.toLowerCase())) {
-        list.unshift(searchedToken);
-      }
+      list.sort((a, b) => {
+        const aExact = a.symbol.toLowerCase() === needle || a.name.toLowerCase() === needle;
+        const bExact = b.symbol.toLowerCase() === needle || b.name.toLowerCase() === needle;
+        if (aExact !== bExact) return aExact ? -1 : 1;
+        const liquidityA = Math.max(...(a.deployments?.map(d => d.liquidityUsd ?? 0) ?? [0]));
+        const liquidityB = Math.max(...(b.deployments?.map(d => d.liquidityUsd ?? 0) ?? [0]));
+        return liquidityB - liquidityA;
+    });
+
+      for (const st of searchedTokens) {
+    if (!list.find(t => 
+        t.id === st.id || 
+        t.symbol.toLowerCase() === st.symbol.toLowerCase()
+    )) {
+        list.push(st);
+    }
+}
     } else {
       // Use tab filtering
       list = getTokensForTab(selectedTab);
     }
 
-    // Sorting
     if (sortField !== 'none') {
       list = [...list].sort((a, b) => {
         const valA = sortField === 'price' ? (a.price ?? 0) : (a.changePercent ?? 0);
@@ -102,7 +143,7 @@ export default function MarketScreen() {
     }
 
     return list;
-  }, [searchText, selectedTab, sortField, sortDirection, allTokens, getTokensForTab, searchedToken]);
+  }, [searchText, selectedTab, sortField, sortDirection, allTokens, getTokensForTab, searchedTokens]);
 
   const handleSortTap = (field: SortField) => {
     if (sortField === field) {
@@ -136,10 +177,10 @@ export default function MarketScreen() {
     const isPositive = change >= 0;
     const badgeColor = isPositive ? (Colors.AppGreen?.[scheme] || '#28CD41') : (Colors.AppRed?.[scheme] || '#FF3B30');
 
-    // Handle token images properly (Network vs Local fallback)
-    const imageSource = item.logo && item.logo.startsWith('http') 
-        ? { uri: item.logo } 
-        : require('../../assets/icon.png'); // Fallback
+    const priceUsd = item.price ?? 0;
+    const localRate = fiatRates?.[selectedCurrency] || 1; 
+    const localSymbol = CURRENCY_SYMBOLS[selectedCurrency] || '$';
+    const convertedPrice = priceUsd * localRate;
 
     return (
       <View style={styles.rowContainer}>
@@ -149,7 +190,7 @@ export default function MarketScreen() {
           <View style={styles.rowLeft}>
             
             {/* --- REPLACED IMAGE WITH TOKENICON --- */}
-            <View style={{ marginLeft: 1, marginRight: 2.5 }}>
+            <View style={{ marginLeft: 1.1, marginRight: 2.5 }}>
               <TokenIcon 
                 symbol={item.symbol} 
                 logoUrl={item.logo} 
@@ -157,7 +198,7 @@ export default function MarketScreen() {
               />
             </View>
 
-            <View style={{ justifyContent: 'center', gap: 2, flex: 1, paddingRight: 10 }}>
+            <View style={{ justifyContent: 'center', gap: 2.4, flex: 1, paddingRight: 10 }}>
               <Text 
                 style={[styles.tokenName, { color: Colors.TextPrimary[scheme] }]}
                 numberOfLines={1}
@@ -172,29 +213,37 @@ export default function MarketScreen() {
             </View>
           </View>
 
-          {/* Right Side: Smart Price & Change */}
           <View style={styles.rowRight}>
             
-            {/* Using your new SmartPriceText component! */}
-            <View style={{ paddingRight: 10 }}>
+            <View style={{ paddingRight: 16.1, alignItems: 'flex-end', justifyContent: 'center', gap: selectedCurrency === 'None' ? 0 : 2.4 }}>
               <SmartPriceText 
                 value={item.price ?? 0} 
                 fontSize={16} 
                 fontFamily="Inter-SemiBold" 
-                color={Colors.TextPrimary[scheme]} 
+                color={Colors.TextPrimary[scheme]}
+                symbol="$" 
               />
+              
+              {selectedCurrency !== 'None' && (
+                <SmartPriceText 
+                  value={convertedPrice} 
+                  fontSize={13} 
+                  fontFamily="Inter-Medium" 
+                  color={Colors.TextSecondary[scheme]}
+                  symbol={localSymbol} 
+                />
+              )}
             </View>
 
             <View style={[styles.percentBadge, { backgroundColor: badgeColor }]}>
               <Text 
                 style={styles.percentText}
-                numberOfLines={1}
-                adjustsFontSizeToFit={true}
-                minimumFontScale={0.5}
+                numberOfLines={1} adjustsFontSizeToFit={true} minimumFontScale={0.5}
               >
                 {formatPercent(change)}
               </Text>
             </View>
+            
           </View>
         </TouchableOpacity>
       </View>
@@ -206,11 +255,11 @@ export default function MarketScreen() {
       
       {/* 1. Search Bar */}
       <View style={styles.searchSection}>
-        <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]}>
+        <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }]}>
           <Ionicons name="search" size={16} color={isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.45)'} />
           <TextInput
             style={[styles.searchInput, { color: Colors.TextPrimary[scheme] }]}
-            placeholder="Search assets"
+            placeholder="Search Token or Address"
             placeholderTextColor={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.38)'}
             value={searchText}
             onChangeText={setSearchText}
@@ -232,10 +281,14 @@ export default function MarketScreen() {
             const isSelected = selectedTab === tab;
             return (
               <TouchableOpacity 
-                key={tab} 
-                onPress={() => setSelectedTab(tab)}
-                activeOpacity={0.7}
-              >
+                  key={tab} 
+                  onPress={() => {
+                    setSelectedTab(tab);
+                    setSortField('none');      
+                    setSortDirection('desc');  
+                  }}
+                  activeOpacity={0.7}
+                >
                 <View style={styles.tabItem}>
                   <Text style={[
                     styles.tabText, 
@@ -283,8 +336,11 @@ export default function MarketScreen() {
           keyExtractor={item => item.id}
           renderItem={renderToken}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 50 }}
+          contentContainerStyle={{ paddingBottom: 0 }}
           onScrollBeginDrag={() => Keyboard.dismiss()}
+          initialNumToRender={20}      
+          maxToRenderPerBatch={10}    
+          windowSize={10}
           ListEmptyComponent={() => (
             <View style={{ alignItems: 'center', marginTop: 30 }}>
               {isLoading ? (
@@ -305,26 +361,26 @@ export default function MarketScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Platform.OS === 'ios' ? 56 : 40,
     paddingHorizontal: 11,
   },
   searchSection: {
     paddingBottom: -1,
-    paddingTop: 7,
+    paddingTop: 10,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 42,
-    borderRadius: 11,
+    height: 45,
+    borderRadius: 16,
     paddingHorizontal: 12,
-    marginBottom: 10,
+    marginBottom: 9,
   },
   searchInput: {
     flex: 1,
     marginLeft: 10,
     fontSize: 16,
-    fontFamily: 'Inter-Regular', 
+    fontFamily: 'Inter-Medium', 
   },
   tabsContainer: {
     paddingVertical: 4,
@@ -347,7 +403,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: 'rgba(150, 150, 150, 0.3)',
-    marginTop: -6,
+    marginTop: -6.1,
     marginBottom: 14,
   },
   sortHeader: {
@@ -389,12 +445,19 @@ const styles = StyleSheet.create({
   rowContainer: {
     position: 'relative',
   },
-  row: {
+row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
     paddingRight: 2,
     gap: 8,
+    ...Platform.select({
+      ios: {
+        paddingVertical: 8,
+      },
+      android: {
+        paddingVertical: 4, 
+      }
+    }),
   },
   rowLeft: {
     flexDirection: 'row',
@@ -421,8 +484,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   percentBadge: {
-    width: 80,
-    height: 32,
+    width: 75,
+    height: 33.5,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 7,

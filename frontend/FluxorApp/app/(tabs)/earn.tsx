@@ -13,6 +13,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../theme/colors';
 import { useTheme } from '../context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 interface LeaderboardUser {
   id: string;
@@ -70,6 +72,7 @@ const StatRow = ({ title, value, scheme }: { title: string; value: string; schem
 export default function EarnScreen() {
   const { theme: scheme } = useTheme();
   const isDark = scheme === 'dark';
+  const insets = useSafeAreaInsets();
   const [selectedTab, setSelectedTab] = useState<'Points' | 'Leaderboard'>('Points');
   const tabs: ('Points' | 'Leaderboard')[] = ['Points', 'Leaderboard'];
   const referralLink = 'https://fluxor.fi/ref/FLUX2025';
@@ -84,10 +87,17 @@ export default function EarnScreen() {
     }
   };
 
-  return (
+return (
     <View style={[styles.container, { backgroundColor: Colors.AppBackground[scheme] }]}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} translucent={true} />
+
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.contentContainer}>
+        <View style={[
+          styles.contentContainer, 
+          { 
+            paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 25, 10) : Math.max(insets.top + 15, 20)
+          }
+        ]}>
           
           {/* Custom Segmented Control */}
           <View style={{ alignItems: 'center' }}>
@@ -236,26 +246,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingTop: Platform.OS === 'ios' ? 75 : 20, 
     gap: 20,
+    paddingBottom: 10,
   },
   
-  // Tabs
   tabWrapper: {
     flexDirection: 'row',
     width: 260,
     borderRadius: 15,
     padding: 4,
-    marginTop: -8, // Matches .padding(.top, -8)
+    marginTop: -8, 
+    overflow: 'hidden',
   },
   tabButton: {
     flex: 1,
   },
   tabBackground: {
-    borderRadius: 11,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
+    overflow: 'hidden',
   },
   tabText: {
     fontSize: 16,

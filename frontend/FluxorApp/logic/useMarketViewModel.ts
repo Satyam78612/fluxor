@@ -15,7 +15,7 @@ export type MarketTab = 'All' | 'Trending' | 'Stocks' | 'Gainers' | 'Losers' | '
 
 export default function useMarketViewModel() {
   const [allTokens, setAllTokens] = useState<Token[]>([]);
-  const [searchedToken, setSearchedToken] = useState<Token | null>(null);
+  const [searchedTokens, setSearchedTokens] = useState<Token[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
   const [trending, setTrending] = useState<Token[]>([]);
@@ -26,10 +26,12 @@ export default function useMarketViewModel() {
   const [btcDominance, setBtcDominance] = useState<number>(0);
   const [ethDominance, setEthDominance] = useState<number>(0);
 
-  // --- Initial Load ---
+  const [fiatRates, setFiatRates] = useState<Record<string, number>>({ USD: 1 });
+
   useEffect(() => {
     loadLocalTokens();
     loadData();
+    fetchFiatRates();
   }, []);
 
   // --- Reactive Derived Lists (Updates automatically when allTokens changes) ---
@@ -60,13 +62,34 @@ export default function useMarketViewModel() {
   // --- Core Functions ---
   const loadLocalTokens = () => {
     try {
-      // NOTE: Ensure your JSON file is accessible at this path in your Expo project
       const decodedTokens: Token[] = require('../assets/Contract for frontend.json');
       
       setAllTokens(decodedTokens);
       console.log(`✅ Successfully loaded ${decodedTokens.length} tokens from local JSON.`);
     } catch (error) {
       console.error("❌ JSON Decoding Error:", error);
+    }
+  };
+
+  const fetchFiatRates = async () => {
+    try {
+      // NOTE: Update this URL to match the exact route you create on your backend!
+      const response = await fetch("https://fluxor-backend-ouwq.onrender.com/api/fiat-rates");
+      
+      if (!response.ok) {
+        console.error("⚠️ Failed to fetch fiat rates from backend.");
+        return;
+      }
+      
+      const rates = await response.json();
+      
+      // Assumes your backend returns an object like: { "USD": 1, "EUR": 0.92, ... }
+      if (rates && Object.keys(rates).length > 0) {
+        setFiatRates(rates);
+        console.log("✅ Successfully loaded fiat rates.");
+      }
+    } catch (error) {
+      console.error("❌ Fiat Rates Error:", error);
     }
   };
 
@@ -121,36 +144,21 @@ export default function useMarketViewModel() {
   };
 
   const loadData = async () => {
-    await fetchFearAndGreed();
-    await fetchDominance();
-  };
-
-  const fetchFearAndGreed = async () => {
     try {
-      const response = await fetch("https://api.alternative.me/fng/?limit=1");
-      const data = await response.json();
-      if (data.data && data.data.length > 0) {
-        setFearAndGreedScore(Number(data.data[0].value) || 50);
-      }
+        const response = await fetch("https://fluxor-backend-ouwq.onrender.com/api/market/metrics");
+        if (!response.ok) return;
+        const decoded = await response.json();
+        if (decoded.fearAndGreed?.value) {
+            setFearAndGreedScore(Number(decoded.fearAndGreed.value) || 50);
+        }
+        if (decoded.dominance) {
+            setBtcDominance(decoded.dominance.btc_dominance);
+            setEthDominance(decoded.dominance.eth_dominance);
+        }
     } catch (error) {
-      console.error("⚠️ Fear/Greed Error:", error);
+        console.error("⚠️ Market Metrics Error:", error);
     }
-  };
-
-  const fetchDominance = async () => {
-    try {
-      const response = await fetch("https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest", {
-        headers: { "X-CMC_PRO_API_KEY": "4b380165876b4ec18e100af29717b1e4" }
-      });
-      const json = await response.json();
-      if (json.data) {
-        setBtcDominance(json.data.btc_dominance);
-        setEthDominance(json.data.eth_dominance);
-      }
-    } catch (error) {
-      console.error("⚠️ Dominance Error:", error);
-    }
-  };
+};
 
   // --- Helpers ---
   const getTokensForTab = useCallback((tab: string): Token[] => {
@@ -168,39 +176,29 @@ export default function useMarketViewModel() {
     }
   }, [allTokens, gainers, losers, trending]);
 
-  const searchTokenByAddress = async (address: string) => {
-    const cleanAddress = address.trim();
-    if (cleanAddress.length <= 1) return;
-
+const searchTokenByAddress = async (address: string) => {
+    const clean = address.trim();
+    if (clean.length <= 1) return;
     setIsLoading(true);
-    setSearchedToken(null);
-
-    const foundToken = await TokenSearchManager.shared.searchToken(cleanAddress);
-    
-    if (foundToken) {
-      setSearchedToken(foundToken);
-      
-      setAllTokens(prev => {
-        const idx = prev.findIndex(t => t.id === foundToken.id);
-        if (idx !== -1) {
-          const copy = [...prev];
-          copy[idx] = { ...copy[idx], price: foundToken.price, changePercent: foundToken.changePercent };
-          return copy;
-        }
-        return prev;
-      });
+    setSearchedTokens([]);
+    const isEVM = clean.startsWith('0x') && clean.length === 42;
+    const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+    const isSolana = !clean.startsWith('0x') && base58Regex.test(clean);
+    const isContract = isEVM || isSolana;
+    if (isContract) {
+        const token = await TokenSearchManager.shared.searchByContract(clean);
+        setSearchedTokens(token ? [token] : []);
     } else {
-      console.log("⚠️ [ViewModel] Search failed or returned 404. Clearing result.");
-      setSearchedToken(null);
+        const results = await TokenSearchManager.shared.searchByName(clean);
+        setSearchedTokens(results);
     }
-    
     setIsLoading(false);
-  };
+};
 
   return {
     allTokens,
-    searchedToken,
-    setSearchedToken,
+    searchedTokens,
+    setSearchedTokens,
     isLoading,
     fearAndGreedScore,
     btcDominance,
@@ -209,6 +207,7 @@ export default function useMarketViewModel() {
     searchTokenByAddress,
     trending,
     gainers,
-    losers
+    losers,
+    fiatRates
   };
 }

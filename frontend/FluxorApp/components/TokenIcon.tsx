@@ -1,5 +1,7 @@
-import React from 'react';
-import { Image, View } from 'react-native';
+import React, { memo, useState, useEffect } from 'react';
+import { View, ActivityIndicator, Text } from 'react-native';
+import { Image } from 'expo-image';
+
 
 // --- TOKEN SVGS ---
 import AaveIcon from '../assets/Images/aave.svg';
@@ -27,7 +29,6 @@ import IdIcon from '../assets/Images/id.svg';
 import IntcxIcon from '../assets/Images/intcx.svg';
 import JupIcon from '../assets/Images/jup.svg';
 import LdoIcon from '../assets/Images/ldo.svg';
-import LineaIcon from '../assets/Images/linea.svg';
 import ManaIcon from '../assets/Images/mana.svg';
 import MkrIcon from '../assets/Images/mkr.svg';
 import MntIcon from '../assets/Images/mnt.svg';
@@ -94,7 +95,6 @@ const LOCAL_ASSETS: Record<string, any> = {
   'INTCX': IntcxIcon,
   'JUP': JupIcon,
   'LDO': LdoIcon,
-  'LINEA': LineaIcon,
   'MANA': ManaIcon,
   'MKR': MkrIcon,
   'MNT': MntIcon,
@@ -159,8 +159,8 @@ const LOCAL_ASSETS: Record<string, any> = {
   'MERL': require('../assets/Images/merl.png'),
   'OKB': require('../assets/Images/okb.png'),
   'S': require('../assets/Images/s.jpeg'),
+  'LINEA': require('../assets/Images/linea.png'),
   
-
   // --- CHAIN REGISTRY MAPPINGS ---
   // These perfectly match the "icon" string in your ChainRegistryData
   'ETHEREUM': EthereumChainIcon,
@@ -188,16 +188,23 @@ interface TokenIconProps {
   size?: number;
 }
 
-export const TokenIcon: React.FC<TokenIconProps> = ({ symbol, logoUrl, size = 38 }) => {
-  // Gracefully handle undefined symbols
+const TokenIconComponent: React.FC<TokenIconProps> = ({ symbol, logoUrl, size = 38 }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const formattedUrl = logoUrl?.startsWith('ipfs://')
+    ? logoUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
+    : logoUrl;
+
+  useEffect(() => {
+    if (formattedUrl) {
+      setLoading(true);
+      setError(false);
+    }
+  }, [formattedUrl]);
+
   const normalizedSymbol = symbol ? symbol.toUpperCase() : '';
   const LocalAsset = LOCAL_ASSETS[normalizedSymbol];
-
-  // Debugging log so you know EXACTLY what is missing in the terminal
-  if (!LocalAsset && normalizedSymbol !== '') {
-    console.log(`[TokenIcon] Could not find asset for: "${normalizedSymbol}"`);
-  }
-
   const containerStyle = {
     width: size,
     height: size,
@@ -206,25 +213,52 @@ export const TokenIcon: React.FC<TokenIconProps> = ({ symbol, logoUrl, size = 38
   };
 
   if (LocalAsset) {
-    // Crucial check: Distinguish between imported SVGs (functions) and required PNGs/JPGs (objects/numbers)
     if (typeof LocalAsset === 'function') {
       const SvgComponent = LocalAsset as React.ElementType;
-      return (
-        <View style={containerStyle}>
-          <SvgComponent width={size} height={size} />
-        </View>
-      );
-    } else {
-      // It's a Raster image (PNG/JPG)
-      return <Image source={LocalAsset} style={containerStyle} />;
+      return <View style={containerStyle}><SvgComponent width={size} height={size} /></View>;
     }
+    return <Image source={LocalAsset} style={containerStyle} contentFit="cover" />;
   }
 
-  // Fallback to web URL if provided
-  if (logoUrl && logoUrl.startsWith('http')) {
-    return <Image source={{ uri: logoUrl }} style={containerStyle} />;
-  }
+  if (formattedUrl && formattedUrl.startsWith('http')) {
+    return (
+      <View style={[containerStyle, { backgroundColor: 'rgba(150,150,150,0.1)' }]}>
 
-  // Absolute fallback
-  return <Image source={require('../assets/icon.png')} style={containerStyle} />;
+        {loading && !error && (
+          <View style={{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="small" color="rgba(150,150,150,0.6)" />
+          </View>
+        )}
+
+        {error ? (
+          <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: size * 0.55 }}>❓</Text>
+          </View>
+        ) : (
+          <Image
+            source={formattedUrl}
+            style={containerStyle}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={150}
+            placeholder={require('../assets/icon.png')}
+            onLoadEnd={() => setLoading(false)}
+            onError={() => { setError(true); setLoading(false); }}
+          />
+        )}
+      </View>
+    );
+}
+
+  return (
+    <View style={[containerStyle, { backgroundColor: 'rgba(150,150,150,0.15)', alignItems: 'center', justifyContent: 'center' }]}>
+      <Text style={{ fontSize: size * 0.55 }}>❓</Text>
+    </View>
+  );
 };
+
+export const TokenIcon = memo(TokenIconComponent, (prev, next) =>
+  prev.symbol === next.symbol &&
+  prev.logoUrl === next.logoUrl &&
+  prev.size === next.size
+);

@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { SymbolView, SFSymbol } from 'expo-symbols';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -31,6 +32,38 @@ interface ColorTheme {
   light: string;
   dark: string;
 }
+
+interface PlatformIconProps {
+  iosName: SFSymbol;
+  androidName: keyof typeof Ionicons.glyphMap;
+  size?: number;
+  color: string;
+  style?: any;
+  weight?: 'bold' | 'semibold' | 'medium' | 'regular' | 'light'; 
+}
+
+const PlatformIcon = ({ 
+  iosName, 
+  androidName, 
+  size = 22, 
+  color, 
+  style, 
+  weight = 'bold' 
+}: PlatformIconProps) => {
+  if (Platform.OS === 'ios') {
+    return (
+      <SymbolView
+        name={iosName}
+        size={size}
+        weight={weight} 
+        tintColor={color}
+        resizeMode="scaleAspectFit"
+        style={[{ width: size, height: size }, style]}
+      />
+    );
+  }
+  return <Ionicons name={androidName} size={size} color={color} style={style} />;
+};
 
 // Adjust this to match your actual theme/colors.ts if you have one exported
 const Colors: Record<string, ColorTheme> = {
@@ -50,6 +83,7 @@ const Keys = {
   isLoggedIn: 'isLoggedIn',
   faceIDEnabled: 'faceIDEnabled',
   selectedLockTime: 'selectedLockTime',
+  selectedCurrency: 'selectedCurrency',
 };
 
 // Props Interfaces for Sub-Components
@@ -109,6 +143,10 @@ export default function SettingsScreen() {
   const [showAutoLockSheet, setShowAutoLockSheet] = useState<boolean>(false);
   const [showThemeSheet, setShowThemeSheet] = useState<boolean>(false);
 
+  // States
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('None');
+  const [showCurrencySheet, setShowCurrencySheet] = useState<boolean>(false); 
+
   // Load Data on Mount
   useEffect(() => {
     const loadSettings = async () => {
@@ -116,11 +154,13 @@ export default function SettingsScreen() {
       const storedImage = await AsyncStorage.getItem(Keys.userProfileImage);
       const storedFaceID = await AsyncStorage.getItem(Keys.faceIDEnabled);
       const storedLockTime = await AsyncStorage.getItem(Keys.selectedLockTime);
+      const storedCurrency = await AsyncStorage.getItem(Keys.selectedCurrency); // <-- ADD THIS
 
       if (storedName) setUserName(storedName);
       if (storedImage) setProfileImage(storedImage);
       if (storedFaceID) setFaceIDEnabled(storedFaceID === 'true');
       if (storedLockTime) setSelectedLockTime(storedLockTime);
+      if (storedCurrency) setSelectedCurrency(storedCurrency); // <-- ADD THIS
     };
     loadSettings();
   }, []);
@@ -228,18 +268,28 @@ export default function SettingsScreen() {
             {/* Face ID Row */}
             <View style={styles.rowItem}>
               <View style={styles.rowLeft}>
-                <Ionicons name={Platform.OS === 'ios' ? "scan-outline" : "finger-print-outline"} size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
+                <PlatformIcon 
+                  iosName="faceid" 
+                  androidName="finger-print-outline" 
+                  size={22} 
+                  color={Colors.TextPrimary[scheme]} 
+                  style={styles.rowIcon} 
+                />
                 <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>
-                  {Platform.OS === 'ios' ? 'Face ID / Touch ID' : 'App Lock'}
+                  {Platform.OS === 'ios' ? 'Face ID' : 'App Lock'}
                 </Text>
               </View>
-              <Switch
-                value={faceIDEnabled}
-                onValueChange={handleFaceIDToggle}
-                trackColor={{ false: '#767577', true: Colors.AppGreen?.[scheme] || '#34C759' }}
-                ios_backgroundColor="#3e3e3e"
-                style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }], marginTop: 17 }}
-              />
+
+              {/* Wrap the Switch in rowRight to force perfect vertical centering */}
+              <View style={styles.rowRight}>
+                <Switch
+                  value={faceIDEnabled}
+                  onValueChange={handleFaceIDToggle}
+                  trackColor={{ false: '#767577', true: Colors.AppGreen?.[scheme] || '#34C759' }}
+                  ios_backgroundColor="#3e3e3e"
+                  style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }}
+                />
+              </View>
             </View>
 
             {/* Auto Lock */}
@@ -249,7 +299,7 @@ export default function SettingsScreen() {
               onPress={() => setShowAutoLockSheet(true)}
             >
               <View style={styles.rowLeft}>
-                <Ionicons name="lock-closed-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
+                <PlatformIcon iosName="lock.fill" androidName="lock-closed-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
                 <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Auto lock</Text>
               </View>
               <View style={styles.rowRight}>
@@ -258,9 +308,27 @@ export default function SettingsScreen() {
               </View>
             </TouchableOpacity>
 
+            {/* Currency */}
+            <TouchableOpacity style={styles.rowItem} onPress={() => setShowCurrencySheet(true)}>
+              <View style={styles.rowLeft}>
+                <PlatformIcon 
+                  iosName="dollarsign.circle" 
+                  androidName="cash-outline" 
+                  size={22} 
+                  color={Colors.TextPrimary[scheme]} 
+                  style={styles.rowIcon} 
+                />
+                <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Currency</Text>
+              </View>
+              <View style={styles.rowRight}>
+                <Text style={styles.rowValue}>{selectedCurrency}</Text>
+                <Ionicons name="chevron-forward" size={16} color={Colors.TextSecondary[scheme]} />
+              </View>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.rowItem} onPress={() => setShowThemeSheet(true)}>
               <View style={styles.rowLeft}>
-                <Ionicons name="sunny-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
+                <PlatformIcon iosName="sun.max" androidName="sunny-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
                 <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Theme</Text>
               </View>
               <View style={styles.rowRight}>
@@ -273,7 +341,7 @@ export default function SettingsScreen() {
             {/* Reset App */}
             <TouchableOpacity style={styles.rowItem} onPress={() => setActivePage('Reset')}>
               <View style={styles.rowLeft}>
-                <Ionicons name="trash-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
+                <PlatformIcon iosName="trash" androidName="trash-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
                 <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Reset App</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={Colors.TextSecondary[scheme]} />
@@ -288,17 +356,30 @@ export default function SettingsScreen() {
             
             <View style={[styles.cardGroup, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF' }]}>
               
-              <TouchableOpacity style={styles.rowItem} onPress={() => Linking.openURL('https://twitter.com')}>
-                <View style={styles.rowLeft}>
-                  <Ionicons name="logo-twitter" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
-                  <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Follow Us</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={Colors.TextSecondary[scheme]} />
-              </TouchableOpacity>
+              <TouchableOpacity style={styles.rowItem} onPress={() => Linking.openURL('https://x.com/Fluxor_dex')}>
+               <View style={styles.rowLeft}>
+    
+                 <View style={[styles.rowIcon, { alignItems: 'center', justifyContent: 'center' }]}>
+                  <Image 
+                     source={require('../../assets/Buttons/X.png')} 
+                     style={{ 
+                       width: 30, 
+                       height: 30, 
+                       tintColor: Colors.TextPrimary[scheme],
+                       marginLeft: Platform.OS === 'android' ? -10 : 0 
+                     }} 
+                     resizeMode="contain"
+                   />
+                 </View>
 
-              <TouchableOpacity style={styles.rowItem} onPress={() => Linking.openURL('https://t.me/')}>
+                 <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Follow Us</Text>
+               </View>
+               <Ionicons name="chevron-forward" size={16} color={Colors.TextSecondary[scheme]} />
+             </TouchableOpacity>
+
+              <TouchableOpacity style={styles.rowItem} onPress={() => Linking.openURL('https://t.me/Fluxor_dex')}>
                 <View style={styles.rowLeft}>
-                  <Ionicons name="chatbubble-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
+                  <PlatformIcon iosName="message" androidName="chatbubble-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
                   <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Feedback</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color={Colors.TextSecondary[scheme]} />
@@ -306,7 +387,7 @@ export default function SettingsScreen() {
 
               <TouchableOpacity style={styles.rowItem}>
                 <View style={styles.rowLeft}>
-                  <Ionicons name="hand-left-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
+                  <PlatformIcon iosName="hand.raised" androidName="hand-left-outline" size={22} color={Colors.TextPrimary[scheme]} style={styles.rowIcon} />
                   <Text style={[styles.rowText, { color: Colors.TextPrimary[scheme] }]}>Privacy Policy</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color={Colors.TextSecondary[scheme]} />
@@ -320,6 +401,19 @@ export default function SettingsScreen() {
       {/* Sheets */}
       <Modal visible={showAutoLockSheet} transparent animationType="slide">
         <AutoLockSheet scheme={scheme} selected={selectedLockTime} onSelect={(val: string) => { setSelectedLockTime(val); AsyncStorage.setItem(Keys.selectedLockTime, val); setShowAutoLockSheet(false); }} onClose={() => setShowAutoLockSheet(false)} />
+      </Modal>
+
+      <Modal visible={showCurrencySheet} transparent animationType="slide">
+        <CurrencySheet 
+          scheme={scheme} 
+          selected={selectedCurrency} 
+          onSelect={(val: string) => { 
+            setSelectedCurrency(val); 
+            AsyncStorage.setItem(Keys.selectedCurrency, val); 
+            setShowCurrencySheet(false); 
+          }} 
+          onClose={() => setShowCurrencySheet(false)} 
+        />
       </Modal>
 
       <Modal visible={showThemeSheet} transparent animationType="slide">
@@ -506,7 +600,7 @@ function ResetAppView({ scheme, onBack, faceIDEnabled }: ResetAppViewProps) {
 
          <View style={{ 
            paddingHorizontal: 20, 
-           paddingBottom: 20, 
+           paddingBottom: 10, 
            flexDirection: 'row', 
            gap: 12 
          }}>
@@ -549,7 +643,7 @@ function AutoLockSheet({ scheme, selected, onSelect, onClose }: SheetProps) {
   return (
     <BottomSheetWrapper scheme={scheme} onClose={onClose}>
       <Text style={[styles.sheetTitle, { color: Colors.TextPrimary[scheme] }]}>Auto lock time</Text>
-      <View style={{ paddingHorizontal: 16, gap: 12 }}>
+      <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 40 }}>
         {options.map((opt: string) => (
           <TouchableOpacity 
             key={opt} 
@@ -566,6 +660,51 @@ function AutoLockSheet({ scheme, selected, onSelect, onClose }: SheetProps) {
   );
 }
 
+function CurrencySheet({ scheme, selected, onSelect, onClose }: SheetProps) {
+  const currencies = [
+    { code: "None", flag: "none", short: "None" },
+    { code: "USD ($)", flag: "🇺🇸", short: "USD" },
+    { code: "EUR (€)", flag: "🇪🇺", short: "EUR" },
+    { code: "AUD (A$)", flag: "🇦🇺", short: "AUD" },
+    { code: "INR (₹)", flag: "🇮🇳", short: "INR" },
+    { code: "CAD (C$)", flag: "🇨🇦", short: "CAD" },
+    { code: "JPY (¥)", flag: "🇯🇵", short: "JPY" },
+    { code: "CNY (¥)", flag: "🇨🇳", short: "CNY" },
+    { code: "GBP (£)", flag: "🇬🇧", short: "GBP" },
+    { code: "SGD ($)", flag: "🇸🇬", short: "SGD" }
+  ];
+  const isDark = scheme === 'dark';
+
+  return (
+    <BottomSheetWrapper scheme={scheme} onClose={onClose}>
+      <Text style={[styles.sheetTitle, { color: Colors.TextPrimary[scheme], marginBottom: 15 }]}>Currency</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={{ paddingHorizontal: 12, gap: 12, paddingBottom: 40 }}>
+          {currencies.map(c => (
+            <TouchableOpacity 
+              key={c.short} 
+              style={[styles.sheetRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF' }]}
+              onPress={() => onSelect(c.short)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                
+                {c.flag === 'none' ? (
+                  <Ionicons name="eye-off-outline" size={26} color={Colors.TextSecondary[scheme]} />
+                ) : (
+                  <Text style={{ fontSize: 26 }}>{c.flag}</Text>
+                )}
+
+                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 18, color: Colors.TextPrimary[scheme] }}>{c.code}</Text>
+              </View>
+              {selected === c.short && <Ionicons name="checkmark" size={20} color={Colors.AppGreen?.[scheme] || '#34C759'} style={{ fontWeight: 'bold' as any }} />}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    </BottomSheetWrapper>
+  );
+}
+
 function ThemeSheet({ scheme, selected, onSelect, onClose }: SheetProps) {
   const themes = [
     { code: "Light", icon: "sunny-outline" },
@@ -576,7 +715,7 @@ function ThemeSheet({ scheme, selected, onSelect, onClose }: SheetProps) {
   return (
     <BottomSheetWrapper scheme={scheme} onClose={onClose}>
       <Text style={[styles.sheetTitle, { color: Colors.TextPrimary[scheme] }]}>Theme mode</Text>
-      <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 40 }}>
+      <View style={{ paddingHorizontal: 16, gap: 12, paddingBottom: 0 }}>
         {themes.map(t => (
           <TouchableOpacity 
             key={t.code} 
@@ -606,7 +745,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'space-between', 
     paddingHorizontal: 16, 
-    paddingTop: Platform.OS === 'ios' ? 65 : 20, 
+    paddingTop: Platform.OS === 'ios' ? 65 : 45, 
     paddingBottom: 20, 
   },
   headerTitle: { 
@@ -714,6 +853,6 @@ const styles = StyleSheet.create({
   sheetOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheetContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, minHeight: 300, maxHeight: '80%' },
   sheetDragIndicator: { width: 36, height: 5, backgroundColor: 'rgba(150,150,150,0.4)', borderRadius: 3, alignSelf: 'center', marginTop: 10, marginBottom: 15 },
-  sheetTitle: { fontFamily: 'Inter-Bold', fontSize: 22, textAlign: 'center', marginBottom: 20 },
+  sheetTitle: { fontFamily: 'Inter-Bold', fontSize: 21.5, textAlign: 'center', marginBottom: 20 },
   sheetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, borderRadius: 15 },
 });

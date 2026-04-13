@@ -19,12 +19,24 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../theme/colors';
 import { useTheme } from '../context/ThemeContext';
+import { useFocusEffect } from 'expo-router';
 
 // --- Imports from our Logic & Components ---
 import useMarketViewModel from '../../logic/useMarketViewModel';
+import useWalletViewModel from '../../logic/useWalletViewModel';
 import { Token } from '../../logic/Token';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { SmartPriceText } from '../../components/SmartPriceText';
 import { TokenIcon } from '../../components/TokenIcon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const formatSmartValue = (value: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+const formatSmartAmount = (value: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 8, useGrouping: true }).format(value);
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$', EUR: '€', AUD: 'A$', INR: '₹', CAD: 'C$', JPY: '¥', CNY: '¥', GBP: '£', SGD: 'S$'
+};
 
 // --- Helper: Hex to RGBA for Swift-like Opacity Modifiers ---
 const withAlpha = (hexColor: string, alpha: number) => {
@@ -70,6 +82,7 @@ interface AssetItem {
   name: string;
   symbol: string;
   price: string;
+  rawPrice?: number;
   change: string;
   isPositive: boolean;
   balanceValue: string;
@@ -77,18 +90,10 @@ interface AssetItem {
   iconName: string;
 }
 
-// --- Mock Data ---
-const MOCK_WALLET_ASSETS: AssetItem[] = [
-  { id: '1', name: 'Bitcoin', symbol: 'BTC', price: '$91,700', change: '+4.02%', isPositive: true, balanceValue: '$250.00', balanceAmount: '0.0034', iconName: 'BTC' },
-  { id: '2', name: 'Ethereum', symbol: 'ETH', price: '$3,450', change: '-1.20%', isPositive: false, balanceValue: '$1,200.00', balanceAmount: '0.347', iconName: 'ETH' },
-  { id: '3', name: 'Solana', symbol: 'SOL', price: '$145', change: '+5.80%', isPositive: true, balanceValue: '$435.00', balanceAmount: '3.00', iconName: 'SOL' },
-];
-
 const MOCK_HISTORY: any[] = [
   {
-    id: 'h1', symbol: 'AAVE', type: 'Buy', time: '14 Sep 2025, 11:57 AM', price: '$0.12', buyAmount: '+1.2 AAVE', sellAmount: '-$150 USD', gasFee: '$0.10', appFee: '$0.03', status: 'Success',
+    id: 'h1', symbol: 'AAVE', type: 'Buy', time: '14 Sep 2025, 11:57 AM', price: '$0.12', buyAmount: '+1.2 AAVE', sellAmount: '-$150 USD', gasFee: '$0.10', appFee: '$0.03', lpFee: '$0.05', status: 'Success',
     targetTx: { id: 't1', type: 'Target', networkName: 'Base', txHash: '0x92...5ab8' },
-    settlementTx: { id: 's1', type: 'Settlement', networkName: 'Particle Chain', txHash: '0x31...5460' },
     sourceTxs: [
       { id: 'src1', type: 'From', networkName: 'BNB Chain', txHash: '0x31...5460' },
       { id: 'src2', type: 'From', networkName: 'Arbitrum', txHash: '0xd8...4578' },
@@ -97,9 +102,8 @@ const MOCK_HISTORY: any[] = [
     ]
   },
   {
-    id: 'h2', symbol: 'EIGEN', type: 'Sell', time: '12 Aug 2025, 10:49 PM', price: '$0.50', buyAmount: '+$150 USD', sellAmount: '-300 EIGEN', gasFee: '$0.03', appFee: '$0.30', status: 'Success',
+    id: 'h2', symbol: 'EIGEN', type: 'Sell', time: '12 Aug 2025, 10:49 PM', price: '$0.50', buyAmount: '+$150 USD', sellAmount: '-300 EIGEN', gasFee: '$0.03', appFee: '$0.30', lpFee: '$0.15', status: 'Success',
     targetTx: { id: 't2', type: 'Target', networkName: 'Base', txHash: '0x92...5ab8' },
-    settlementTx: { id: 's2', type: 'Settlement', networkName: 'Particle Chain', txHash: '0x31...5460' },
     sourceTxs: [
       { id: 'src3', type: 'From', networkName: 'BNB Chain', txHash: '0x31...5460' }
     ]
@@ -122,7 +126,19 @@ const ORDERBOOK_DATA = [
 
 // --- Helper Functions ---
 const formatWithCommas = (v: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(v);
-const formatAmount = (v: number) => v >= 1 ? v.toFixed(4) : v.toFixed(6);
+const formatAmount = (v: number) => {
+  if (v === 0) return '0';
+  const str = v >= 1 ? v.toFixed(4) : v.toFixed(6);
+  return str.replace(/\.?0+$/, ''); 
+};
+
+const formatLargeNumber = (v: number) => {
+  if (v >= 1e12) return (v / 1e12).toFixed(2) + 'T';
+  if (v >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  return formatAmount(v);
+};
+
 const formatPrice = (v: number) => v.toFixed(2);
 const cleanDecimalInput = (text: string) => {
   let cleaned = text.replace(/,/g, '.').replace(/[^0-9.]/g, '');
@@ -133,10 +149,24 @@ const cleanDecimalInput = (text: string) => {
   return cleaned;
 };
 
-// --- MAIN SCREEN ---
 export default function TradeScreen() {
   const { theme: scheme } = useTheme();
   const marketVM = useMarketViewModel();
+  const walletVM = useWalletViewModel();
+
+  const insets = useSafeAreaInsets();
+
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('None');
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadCurrency = async () => {
+        const storedCurrency = await AsyncStorage.getItem('selectedCurrency');
+        if (storedCurrency) setSelectedCurrency(storedCurrency);
+      };
+      loadCurrency();
+    }, [])
+  );
   
   // State
   const [currentSide, setCurrentSide] = useState<TradeSide>('buy');
@@ -157,11 +187,37 @@ export default function TradeScreen() {
   const [portfolioSortField, setPortfolioSortField] = useState<PortfolioSortField>('none');
   const [portfolioSortDirection, setPortfolioSortDirection] = useState<PortfolioSortDirection>('desc');
 
-  // Asset State
   const [selectedAsset, setSelectedAsset] = useState<AssetItem>({
-    id: 'init', name: 'Bitcoin', symbol: 'BTC', price: '$91,700', change: '+4.02%', isPositive: true, balanceValue: '$250', balanceAmount: '0.0034', iconName: 'BTC'
+    id: 'init', name: 'Bitcoin', symbol: 'BTC', price: '$91,700', rawPrice: 91700, change: '+4.02%', isPositive: true, balanceValue: '$250', balanceAmount: '0.0034', iconName: 'BTC'
   });
   
+  useEffect(() => {
+    if (!marketVM.allTokens || marketVM.allTokens.length === 0) return;
+    
+    const liveToken = marketVM.allTokens.find((t: Token) => t.symbol.toUpperCase() === selectedAsset.symbol.toUpperCase());
+    
+    if (liveToken && liveToken.price && liveToken.price !== selectedAsset.rawPrice) {
+      const change = liveToken.changePercent ?? 0;
+      const priceVal = liveToken.price;
+      const maxDecimals = priceVal >= 1000 ? 2 : (priceVal >= 1 ? 4 : 8);
+      const priceStr = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: maxDecimals,
+      }).format(priceVal);
+
+      setSelectedAsset(prev => ({
+        ...prev,
+        price: priceStr,
+        rawPrice: priceVal,
+        change: `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`,
+        isPositive: change >= 0,
+        iconName: liveToken.logo || prev.iconName 
+      }));
+    }
+  }, [marketVM.allTokens, selectedAsset.symbol]);
+
   // Slippage State
   const [slippage, setSlippage] = useState<number | null>(null);
   const [customSlippage, setCustomSlippage] = useState('');
@@ -171,9 +227,9 @@ export default function TradeScreen() {
   
   // Base theme colors for Buy/Sell
   const themeColor = currentSide === 'buy' ? (Colors.AppGreen?.[scheme] || '#28CD41') : (Colors.AppRed?.[scheme] || '#FF3B30');
-
-  const tokenPrice = parseFloat(selectedAsset.price.replace(/[^0-9.-]+/g, '')) || 0;
-  const availableTokenBalance = parseFloat(selectedAsset.balanceAmount.replace(/,/g, '')) || 0;
+  const tokenPrice = selectedAsset.rawPrice !== undefined ? selectedAsset.rawPrice : (parseFloat(selectedAsset.price.replace(/[^0-9.-]+/g, '')) || 0);
+  const matchedWalletAsset = walletVM.assets.find(a => a.symbol === selectedAsset.symbol);
+  const availableTokenBalance = matchedWalletAsset ? matchedWalletAsset.amount : 0;
 
   const isOverBalance = currentSide === 'buy' 
     ? (parseFloat(totalInput) || 0) > availableUSD 
@@ -242,17 +298,32 @@ export default function TradeScreen() {
     setSliderValue(Math.min(newSliderVal, 100));
   };
 
-  const sortedPortfolio = useMemo(() => {
-    let list = [...MOCK_WALLET_ASSETS];
-    if (portfolioSortField === 'balance') {
-      list.sort((a, b) => {
-        const valA = parseFloat(a.balanceValue.replace(/[^0-9.-]+/g, '')) || 0;
-        const valB = parseFloat(b.balanceValue.replace(/[^0-9.-]+/g, '')) || 0;
-        return portfolioSortDirection === 'asc' ? valA - valB : valB - valA;
-      });
-    }
-    return list;
-  }, [portfolioSortField, portfolioSortDirection]);
+const sortedPortfolio = useMemo(() => {
+  let list = [...walletVM.assets]; 
+
+  if (portfolioSortField === 'balance') {
+    list.sort((a, b) => {
+      return portfolioSortDirection === 'asc' ? a.value - b.value : b.value - a.value;
+    });
+  }
+
+  return list.map(asset => {
+    const startValue = asset.value - asset.dayChangeUSD;
+    const percentChange = startValue > 0 ? (asset.dayChangeUSD / startValue) * 100 : 0.0;
+
+    return {
+      id: asset.id,
+      name: asset.name,
+      symbol: asset.symbol,
+      price: `$${formatWithCommas(asset.amount > 0 ? (asset.value / asset.amount) : 0.0)}`,
+      change: `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`,
+      isPositive: percentChange >= 0,
+      balanceValue: `$${formatSmartValue(asset.value)}`,
+      balanceAmount: formatSmartAmount(asset.amount),
+      iconName: asset.icon 
+    };
+  });
+}, [portfolioSortField, portfolioSortDirection, walletVM.assets]);
 
   // --- Components ---
   const renderTabButton = (title: string, index: number) => {
@@ -267,12 +338,23 @@ export default function TradeScreen() {
     );
   };
 
-  return (
-    <View style={[styles.container, { backgroundColor: Colors.AppBackground[scheme] }]}>
+ return (
+    <View style={[
+      styles.container, 
+      { 
+        backgroundColor: Colors.AppBackground[scheme],
+        // Dynamically calculate the top padding for Android & iOS
+        paddingTop: Platform.OS === 'android' ? Math.max(insets.top + 5, 10) : Math.max(insets.top + -6, 0),
+      }
+    ]}>
+      
+      {/* Make the Android status bar translucent */}
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} translucent={true} />
       
       {/* Header */}
       <View style={[styles.header, { backgroundColor: Colors.AppBackground[scheme] }]}>
         <TouchableOpacity style={styles.tokenSelectBtn} onPress={() => setShowTokenSelector(true)} activeOpacity={0.7}>
+          
           <TokenIcon symbol={selectedAsset.symbol} logoUrl={selectedAsset.iconName} size={37} />
           <View style={styles.tokenSelectTextWrap}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -327,7 +409,7 @@ export default function TradeScreen() {
             {currentSide === 'buy' ? (
               <>
                 <View style={[styles.inputPill, { backgroundColor: Colors.SwapCardBackground?.[scheme] || '#1C1C1E' }]}>
-                   <Text style={[styles.inputText, { color: amountInput ? Colors.TextPrimary[scheme] : Colors.TextSecondary[scheme] }]}>{amountInput || `Amount (${selectedAsset.symbol})`}</Text>
+                   <Text style={[styles.inputText, { color: amountInput ? Colors.TextPrimary[scheme] : Colors.TextSecondary[scheme] }]}>{amountInput ? formatLargeNumber(parseFloat(amountInput)) : `Amount (${selectedAsset.symbol})`}</Text>
                 </View>
                 <ThinSlider 
                     value={sliderValue} 
@@ -357,9 +439,27 @@ export default function TradeScreen() {
             )}
 
             <View style={styles.infoBox}>
-              <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: Colors.TextSecondary[scheme] }]}>Avbl</Text><Text style={[styles.infoVal, { color: Colors.TextPrimary[scheme] }]}>{currentSide === 'buy' ? `${formatWithCommas(availableUSD)} USD` : `${selectedAsset.balanceAmount} ${selectedAsset.symbol}`}</Text></View>
-              <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: Colors.TextSecondary[scheme] }]}>Min received</Text><Text style={[styles.infoVal, { color: Colors.TextPrimary[scheme] }]}>{currentSide === 'buy' ? `${formatAmount(parseFloat(amountInput)||0)} ${selectedAsset.symbol}` : `${formatPrice(parseFloat(totalInput)||0)} USD`}</Text></View>
-              <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: Colors.TextSecondary[scheme] }]}>Gas cost</Text><Text style={[styles.infoVal, { color: Colors.TextPrimary[scheme] }]}>0.10 USD</Text></View>
+              {/* Avbl Row (Protected against massive numbers) */}
+              <View style={styles.infoRow}>
+                <Text style={[styles.infoLabel, { color: Colors.TextSecondary[scheme] }]}>Avbl</Text>
+                <Text style={[styles.infoVal, { color: Colors.TextPrimary[scheme] }]}>
+                  {currentSide === 'buy' ? `${formatLargeNumber(availableUSD)} USD` : `${formatLargeNumber(availableTokenBalance)} ${selectedAsset.symbol}`}
+                </Text>
+              </View>
+  
+              {/* NEW Min received Row (fixing the massive number overlap) */}
+              <View style={styles.infoRow}>
+                <Text style={[styles.infoLabel, { color: Colors.TextSecondary[scheme] }]}>Min received</Text>
+                <Text style={[styles.infoVal, { color: Colors.TextPrimary[scheme] }]}>
+                  {currentSide === 'buy' ? `${formatLargeNumber(parseFloat(amountInput)||0)} ${selectedAsset.symbol}` : `${formatPrice(parseFloat(totalInput)||0)} USD`}
+                </Text>
+              </View>
+  
+              {/* Gas cost Row */}
+              <View style={styles.infoRow}>
+                <Text style={[styles.infoLabel, { color: Colors.TextSecondary[scheme] }]}>Gas cost</Text>
+                <Text style={[styles.infoVal, { color: Colors.TextPrimary[scheme] }]}>0.10 USD</Text>
+              </View>
             </View>
 
             {/* FLAWLESS SOLID BUTTON */}
@@ -449,7 +549,7 @@ export default function TradeScreen() {
                 </View>
               </View>
             ))}
-            <View style={{ height: 40 }} />
+            <View style={{ height: 0 }} />
           </View>
         ) : (
           <View style={styles.historyContent}>
@@ -479,7 +579,10 @@ export default function TradeScreen() {
                       <View style={styles.histDetailRow}><Text style={[styles.histDetailL, { color: Colors.TextPrimary[scheme] }]}>Buy</Text><Text style={[styles.histDetailR, { color: Colors.AppGreen?.[scheme] || '#28CD41' }]}>{item.buyAmount}</Text></View>
                     )}
                     
-                    <View style={styles.histDetailRow}><Text style={[styles.histDetailL, { color: Colors.TextPrimary[scheme] }]}>Gas Fee</Text><Text style={[styles.histDetailR, { color: Colors.TextPrimary[scheme] }]}>{item.gasFee}</Text></View>
+                    <View style={styles.histDetailRow}>
+                      <Text style={[styles.histDetailL, { color: Colors.TextPrimary[scheme] }]}>Gas Fee</Text>
+                      <Text style={[styles.histDetailR, { color: Colors.TextPrimary[scheme] }]}>{item.gasFee}</Text>
+                    </View>
                   </View>
                 </TouchableOpacity>
               ))
@@ -507,7 +610,7 @@ export default function TradeScreen() {
       )}
 
       <Modal visible={showTokenSelector} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowTokenSelector(false)}>
-        <TokenSelectionModal marketVM={marketVM} onClose={() => setShowTokenSelector(false)} onSelect={(asset: AssetItem) => {
+        <TokenSelectionModal marketVM={marketVM} selectedCurrency={selectedCurrency} onClose={() => setShowTokenSelector(false)} onSelect={(asset: AssetItem) => {
           setSelectedAsset(asset);
           setShowTokenSelector(false);
           setAmountInput(''); setTotalInput(''); setSliderValue(0);
@@ -579,9 +682,9 @@ const ThinSlider = ({ value, onValueChange, onDragStart, onDragEnd }: { value: n
 };
 
 // 2. Market Style Token Selection Modal
-const TokenSelectionModal = ({ marketVM, onClose, onSelect }: any) => {
+const TokenSelectionModal = ({ marketVM, selectedCurrency, onClose, onSelect }: any) => {
   const { theme: scheme } = useTheme();
-  const { allTokens, searchedToken, getTokensForTab, searchTokenByAddress, isLoading } = marketVM;
+  const { allTokens, searchedTokens, getTokensForTab, searchTokenByAddress, isLoading, fiatRates } = marketVM;
   const [searchText, setSearchText] = useState('');
   const [selectedTab, setSelectedTab] = useState('All');
   const [sortField, setSortField] = useState<'none' | 'price' | 'change'>('none');
@@ -617,11 +720,25 @@ useEffect(() => {
         (t as any).address?.toLowerCase().includes(needle) ||
         t.deployments?.some(d => d.address?.toLowerCase().includes(needle))
       );
+
+      result.sort((a: Token, b: Token) => {
+        const aExact = a.symbol.toLowerCase() === needle || a.name.toLowerCase() === needle;
+        const bExact = b.symbol.toLowerCase() === needle || b.name.toLowerCase() === needle;
+        if (aExact !== bExact) return aExact ? -1 : 1;
+        const liquidityA = Math.max(...(a.deployments?.map(d => d.liquidityUsd ?? 0) ?? [0]));
+        const liquidityB = Math.max(...(b.deployments?.map(d => d.liquidityUsd ?? 0) ?? [0]));
+        return liquidityB - liquidityA;
+    });
       
       // Prevents duplicates if the searched API token is already in your JSON
-      if (searchedToken && !result.find((t:Token) => t.id === searchedToken.id || t.symbol?.toLowerCase() === searchedToken.symbol?.toLowerCase())) {
-        result.unshift(searchedToken);
-      }
+      for (const st of searchedTokens) {
+    if (!result.find((t: Token) => 
+        t.id === st.id || 
+        t.symbol.toLowerCase() === st.symbol.toLowerCase()
+    )) {
+        result.push(st);
+    }
+}
     }
     
     if (sortField !== 'none') {
@@ -632,7 +749,7 @@ useEffect(() => {
       });
     }
     return result;
-  }, [searchText, selectedTab, sortField, sortDirection, getTokensForTab, allTokens, searchedToken]);
+  }, [searchText, selectedTab, sortField, sortDirection, getTokensForTab, allTokens, searchedTokens]);
 
   return (
     <View style={[styles.modalContainer, { backgroundColor: Colors.AppBackground[scheme] }]}>
@@ -684,6 +801,9 @@ useEffect(() => {
         keyExtractor={(item:Token) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
+        initialNumToRender={20}      
+          maxToRenderPerBatch={10}    
+          windowSize={10}
         ListEmptyComponent={() => (
            <View style={{ alignItems: 'center', marginTop: 30 }}>
              {isLoading ? <ActivityIndicator size="small" color={Colors.TextPrimary[scheme]} /> : <Text style={{ fontSize: 16, color: Colors.TextSecondary[scheme] }}>No tokens found</Text>}
@@ -691,36 +811,76 @@ useEffect(() => {
         )}
         renderItem={({item}) => {
           const change = item.changePercent ?? 0;
-          const priceVal = item.price ?? 0;
-          const maxDecimals = priceVal >= 1000 ? 2 : (priceVal >= 1 ? 4 : 8);
+          
+          const priceUsd = item.price ?? 0;
+          const localRate = fiatRates?.[selectedCurrency] || 1; 
+          const localSymbol = CURRENCY_SYMBOLS[selectedCurrency] || '$';
+          const convertedPrice = priceUsd * localRate;
+          const maxDecimals = priceUsd >= 1000 ? 2 : (priceUsd >= 1 ? 4 : 8);
           const priceStr = new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD',
-              minimumFractionDigits: 2,
-              maximumFractionDigits: maxDecimals,
-          }).format(priceVal);
+              style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: maxDecimals,
+          }).format(priceUsd);
 
           return (
             <TouchableOpacity style={styles.tsTokenRow} onPress={() => {
               onSelect({
                 id: item.id, name: item.name, symbol: item.symbol, 
-                price: priceStr, // <--- NOW PASSING THE FULL FORMATTED PRICE
+                price: priceStr, 
+                rawPrice: priceUsd,
                 change: `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`, 
                 isPositive: change >= 0, 
                 balanceValue: '$0.00', balanceAmount: '0.00', iconName: item.logo
               });
             }}>
               <TokenIcon symbol={item.symbol} logoUrl={item.logo} size={38} />
-              <View style={{ marginLeft: 8, flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.tsTokenName, { color: Colors.TextPrimary[scheme] }]} numberOfLines={1}>{item.name}</Text>
-                <Text style={[styles.tsTokenSym, { color: Colors.TextSecondary[scheme] }]}>{item.symbol.toUpperCase()}</Text>
+              <View style={{ justifyContent: 'center', gap: 2, flex: 1, paddingRight: 10, marginLeft: 8 }}>
+                <Text 
+                  style={[styles.tsTokenName, { color: Colors.TextPrimary[scheme] }]} 
+                  numberOfLines={1}
+                  adjustsFontSizeToFit={true}
+                  minimumFontScale={0.75}
+                >
+                  {item.name}
+                </Text>
+                <Text style={[styles.tsTokenSym, { color: Colors.TextSecondary[scheme] }]}>
+                  {item.symbol.toUpperCase()}
+                </Text>
               </View>
-              <View style={{ alignItems: 'flex-end', paddingRight: 10 }}>
-                <SmartPriceText value={item.price||0} fontSize={16} fontFamily="Inter-SemiBold" color={Colors.TextPrimary[scheme]} />
+              
+              <View style={{ 
+                alignItems: 'flex-end', 
+                paddingRight: 15, 
+                justifyContent: 'center', 
+                gap: selectedCurrency === 'None' ? 0 : 2.5
+              }}>
+                <SmartPriceText 
+                  value={priceUsd} 
+                  fontSize={16} 
+                  fontFamily="Inter-SemiBold" 
+                  color={Colors.TextPrimary[scheme]} 
+                  symbol="$"
+                />
+              
+                {selectedCurrency !== 'None' && (
+                  <SmartPriceText 
+                    value={convertedPrice} 
+                    fontSize={13} 
+                    fontFamily="Inter-Medium" 
+                    color={Colors.TextSecondary[scheme]}
+                    symbol={localSymbol} 
+                  />
+                )}
               </View>
               <View style={[styles.tsPercentBadge, { backgroundColor: change >= 0 ? (Colors.AppGreen?.[scheme] || '#28CD41') : (Colors.AppRed?.[scheme] || '#FF3B30') }]}>
-                 <Text style={styles.tsPercentText} numberOfLines={1}>{change >= 0 ? '+' : ''}{change.toFixed(2)}%</Text>
-              </View>
+                <Text 
+                  style={styles.tsPercentText} 
+                  numberOfLines={1}
+                  adjustsFontSizeToFit={true}
+                  minimumFontScale={0.5}
+                >
+                  {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+                </Text>
+            </View>
             </TouchableOpacity>
           )
         }}
@@ -775,7 +935,7 @@ const TransactionDetailModal = ({ item, onClose }: any) => {
     <View style={{ 
       height: 1, 
       backgroundColor: dividerColor, 
-      marginBottom: 15, 
+      marginBottom: 18, 
       marginTop: marginTop !== undefined ? marginTop : 14
     }} />
   );
@@ -826,9 +986,10 @@ const TransactionDetailModal = ({ item, onClose }: any) => {
                     {item.sellAmount.trim() !== '' && detailRow('Using', item.sellAmount, Colors.AppRed?.[scheme] || '#FF3B30')}
                   </>
                 )}
-                <View style={{ marginBottom: 15 }}> 
+                <View style={{ marginBottom: 25 }}> 
                   {detailRow('Gas Fee', item.gasFee)}
                   {item.appFee ? detailRow('App Fee', item.appFee) : null}
+                  {item.lpFee ? detailRow('LP Fee', item.lpFee) : null}
                 </View>
              </View>
 
@@ -841,20 +1002,7 @@ const TransactionDetailModal = ({ item, onClose }: any) => {
                        <Text style={{ fontSize: 17, fontFamily: 'Inter-SemiBold', color: Colors.TextPrimary[scheme] }}>{item.targetTx.networkName}</Text>
                      </View>
                      {hashRow('Tx Hash', item.targetTx.networkName, item.targetTx.txHash)}
-                     
-                     {(item.settlementTx || item.sourceTxs?.length > 0) && <CustomDivider />}
-                   </View>
-                 )}
-
-                 {item.settlementTx && (
-                   <View>
-                     <View style={{ flexDirection: 'row', gap: 4, marginBottom: 12 }}>
-                       <Text style={{ fontSize: 17, fontFamily: 'Inter-SemiBold', color: Colors.TextPrimary[scheme] }}>Settlement Tx Hash on</Text>
-                       <Text style={{ fontSize: 17, fontFamily: 'Inter-SemiBold', color: Colors.TextPrimary[scheme] }}>{item.settlementTx.networkName}</Text>
-                     </View>
-                     {hashRow('Tx Hash', item.settlementTx.networkName, item.settlementTx.txHash)}
-                     
-                     {item.sourceTxs?.length > 0 && <CustomDivider />}
+                     {(item.sourceTxs?.length > 0) && <CustomDivider />}
                    </View>
                  )}
 
@@ -954,7 +1102,7 @@ const SlippageSettingsModal = ({ onClose, slippage, setSlippage, customSlippage,
 
 // --- STYLES ---
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: Platform.OS === 'ios' ? 55 : 20 },
+  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Layout.horizontalPadding, paddingTop: 10, paddingBottom: 9, zIndex: 1 },
   tokenSelectBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   tokenSelectTextWrap: { flexDirection: 'column' },
@@ -964,7 +1112,15 @@ const styles = StyleSheet.create({
   iconBtn: { padding: 8 },
   customIcon: { width: 25, height: 25, resizeMode: 'contain' },
   
-  topSection: { flexDirection: 'row', paddingHorizontal: Layout.horizontalPadding, paddingTop: 0, height: 350 },
+  topSection: { 
+    flexDirection: 'row', 
+    paddingHorizontal: Layout.horizontalPadding, 
+    paddingTop: 0, 
+    ...Platform.select({
+      ios: { height: 350 },
+      android: { height: 365 } 
+    })
+  },
   formColumn: { flex: 0.60, marginRight: Layout.columnSpacing, justifyContent: 'flex-start', gap: Layout.formSpacing },
   orderbookColumn: { flex: 0.40 },
   
@@ -985,7 +1141,7 @@ const styles = StyleSheet.create({
   infoVal: { fontSize: 14, fontFamily: 'Inter-Medium' },
   
   actionBtn: { height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginTop: -4 },
-  actionBtnText: { color: '#FFFFFF', fontSize: 17, fontFamily: 'Inter-SemiBold' },
+  actionBtnText: { color: '#FFFFFF', fontSize: 17, fontFamily: 'Inter-SemiBold', includeFontPadding: false, textAlignVertical: 'center' },
   
   orderbookContainer: { flex: 1, backgroundColor: 'transparent' },
   obHeader: { paddingVertical: 7, borderRadius: 8, alignItems: 'center', marginHorizontal: 2.8, marginTop: 0 },
@@ -993,22 +1149,30 @@ const styles = StyleSheet.create({
   obLabels: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4, paddingBottom: 8 },
   obLabelLeft: { fontSize: 11, fontFamily: 'Inter-SemiBold' },
   obLabelRight: { fontSize: 11, fontFamily: 'Inter-SemiBold' },
-  obRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4, paddingVertical: 4.5 },
+  obRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 4, 
+    ...Platform.select({
+      ios: { paddingVertical: 4.5 },
+      android: { paddingVertical: 3.4 } 
+    })
+  },
   obPrice: { fontSize: 13, fontFamily: 'Inter-SemiBold' },
   obAmt: { fontSize: 13, fontFamily: 'Inter-Regular' },
   
-  bottomTabs: { flexDirection: 'row', paddingHorizontal: Layout.horizontalPadding, paddingLeft: Layout.horizontalPadding - 0.9, marginTop: 2.5, gap: 20 },
+  bottomTabs: { flexDirection: 'row', paddingHorizontal: Layout.horizontalPadding, paddingLeft: Layout.horizontalPadding - 0.84, marginTop: 4, gap: 20 },
   tabBtn: { alignItems: 'center', paddingHorizontal: 0.5, gap: 3 },
-  tabBtnText: { fontSize: 18, fontFamily: 'Inter-SemiBold' },
+  tabBtnText: { fontSize: 18, fontFamily: 'Inter-SemiBold', includeFontPadding: false, textAlignVertical: 'center',},
   tabIndicator: { height: 2, width: 15, borderRadius: 100, marginTop: 3 },
   fullDivider: { height: 1 },
   
-  portfolioContent: { paddingBottom: 40 },
+  portfolioContent: { paddingBottom: 0 },
   portHeader: { flexDirection: 'row', paddingHorizontal: Layout.horizontalPadding - 0, paddingTop: 8, paddingBottom: 4 }, 
-  portLabel: { fontSize: 13.2, fontFamily: 'Inter-Regular' },
+  portLabel: { fontSize: 13.2, fontFamily: 'Inter-Regular', marginLeft: -0.6 },
   portBalWrap: { flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', gap: 4 },
   sortArrows: { flexDirection: 'column' },
-  portRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8 },
+  portRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 13.2, paddingVertical: 8 },
   portRowLeft: { flexDirection: 'row', alignItems: 'center' },
   portName: { fontSize: 16, fontFamily: 'Inter-SemiBold' },
   portSym: { fontSize: 14.5, fontFamily: 'Inter-Medium' },
@@ -1046,7 +1210,7 @@ const styles = StyleSheet.create({
   modalBg: { flex: 1, paddingHorizontal: 24, paddingTop: Platform.OS === 'ios' ? 60 : 30 },
   modalHeaderClose: { alignItems: 'flex-end', padding: 15 },
   tsSearchBox: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 11, borderRadius: 11, paddingHorizontal: 12, height: 42 },
-  tsSearchInput: { flex: 1, marginLeft: 10, fontSize: 16, fontFamily: 'Inter-Regular' },
+  tsSearchInput: { flex: 1, marginLeft: 10, fontSize: 16, fontFamily: 'Inter-Medium' },
   tsTabText: { fontSize: 17, fontFamily: 'Inter-SemiBold' },
   tsTabIndicator: { height: 2, width: 20, borderRadius: 2, marginTop: 5 },
   tsSortHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 11, paddingBottom: 4, paddingTop: 4 },
@@ -1055,7 +1219,7 @@ const styles = StyleSheet.create({
   tsTokenRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 11, paddingVertical: 8 },
   tsTokenName: { fontSize: 17, fontFamily: 'Inter-SemiBold' },
   tsTokenSym: { fontSize: 14, fontFamily: 'Inter-Medium' },
-  tsPercentBadge: { width: 80, height: 32, borderRadius: 7, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  tsPercentBadge: { width: 75, height: 32, borderRadius: 7, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   tsPercentText: { color: '#FFF', fontSize: 15, fontFamily: 'Inter-SemiBold' },
 
   sheetOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
